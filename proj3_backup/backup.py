@@ -1,8 +1,6 @@
 #Author: King_Crash
 #Date: 9 May 2022
 
-
-
 from shutil import make_archive 
 import sys
 from datetime import date
@@ -15,7 +13,8 @@ DEST_DIR = r"C:\Users\ajdec\Desktop\Test\proj2_backups"
 MAX_BACKUPS = 5
 
 #helper function that gets the st_ctime of all the zip files located in the DEST_DIR
-#searches for the dir with the biggest "existence" time
+#searches for the dir with the biggest "existence" time and stores it in a new list
+#function returns the dir with the oldest time using the max_existence
 def get_oldest_backup(dirs: list) -> str: 
 	dir_existence_time = [None] * len(dirs)
 	min_existence = sys.float_info.max
@@ -55,5 +54,3 @@ def main():
 
 if __name__ == '__main__':
 	main()
-
-
