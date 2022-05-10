@@ -8,9 +8,6 @@ from sys import exit
 from datetime import date
 from os import path, listdir, remove, stat
 
-from requests import get 
-
-
 #variables that represent the src directory and destination directory.
 #change variables as needed.
 SRC_DIR = r"C:\Users\ajdec\Desktop\Test\project2"
@@ -59,7 +56,6 @@ def main():
 	make_archive(base_name=backup_file_dir, format="zip", root_dir=SRC_DIR)
 	print(f"backup: {backup_file_name}.zip has been successfully created on {str(date.today)}")
 
-	
 if __name__ == '__main__':
 	main()
 
