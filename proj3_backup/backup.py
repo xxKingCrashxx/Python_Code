@@ -19,7 +19,7 @@ MAX_BACKUPS = 5
 #function returns the dir with the oldest time using the max_existence
 def get_oldest_backup(dirs: list) -> str: 
 	dir_existence_time = [None] * len(dirs)
-	min_existence = float(sys.maxsize)
+	min_existence = sys.float_info.max
 
 	for i, dir in enumerate(dirs):
 		res = stat(DEST_DIR + "\\" + dir).st_ctime
