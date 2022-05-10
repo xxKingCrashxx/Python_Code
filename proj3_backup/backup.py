@@ -4,7 +4,7 @@
 
 
 from shutil import make_archive 
-from sys import exit
+import sys
 from datetime import date
 from os import path, listdir, remove, stat
 
@@ -19,18 +19,16 @@ MAX_BACKUPS = 5
 #function returns the dir with the oldest time using the max_existence
 def get_oldest_backup(dirs: list) -> str: 
 	dir_existence_time = [None] * len(dirs)
-	max_existence = 0.0
+	min_existence = float(sys.maxsize)
 
 	for i, dir in enumerate(dirs):
 		res = stat(DEST_DIR + "\\" + dir).st_ctime
 		dir_existence_time[i] = res
 
-		if max_existence < res:
-			max_existence = res
-
-	old_dir_index = dir_existence_time.index(max_existence)
+		if min_existence > res:
+			min_existence = res
+	old_dir_index = dir_existence_time.index(min_existence)
 	return dirs[old_dir_index]
-
 
 def main():
 	backup_file_name = "backup-" + str(date.today())
@@ -54,7 +52,7 @@ def main():
 			remove((backup_file_dir + ".zip"))
 
 	make_archive(base_name=backup_file_dir, format="zip", root_dir=SRC_DIR)
-	print(f"backup: {backup_file_name}.zip has been successfully created on {str(date.today)}")
+	print(f"backup: {backup_file_name}.zip has been successfully created on {str(date.today())}")
 
 if __name__ == '__main__':
 	main()
