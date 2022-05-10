@@ -6,7 +6,9 @@
 from shutil import make_archive 
 from sys import exit
 from datetime import date
-from os import path, listdir, remove, stat 
+from os import path, listdir, remove, stat
+
+from requests import get 
 
 
 #variables that represent the src directory and destination directory.
@@ -18,7 +20,7 @@ MAX_BACKUPS = 5
 #helper function that gets the st_ctime of all the zip files located in the DEST_DIR
 #searches for the dir with the biggest "existence" time and stores it in a new list
 #function returns the dir with the oldest time using the max_existence
-def get_oldest_backup(dirs: list):
+def get_oldest_backup(dirs: list) -> str: 
 	dir_existence_time = [None] * len(dirs)
 	max_existence = 0.0
 
@@ -47,14 +49,13 @@ def main():
 
 	dirs = listdir(DEST_DIR)
 	if MAX_BACKUPS <= len(dirs):
-		old_dir_backup = DEST_DIR + "\\" + get_oldest_backup(dirs)
-		remove(old_dir_backup)
-
-	#updating the directory
-	dirs = listdir(DEST_DIR)
+		old_dir = get_oldest_backup(dirs)
+		#old_dir_backup = DEST_DIR + "\\" + old_dir
+		remove(DEST_DIR + "\\" + dirs.pop(dirs.index(old_dir)))
+		
 	if (backup_file_name + ".zip") in dirs:
 			remove((backup_file_dir + ".zip"))
-			
+
 	make_archive(base_name=backup_file_dir, format="zip", root_dir=SRC_DIR)
 	print(f"backup: {backup_file_name}.zip has been successfully created on {str(date.today)}")
 
