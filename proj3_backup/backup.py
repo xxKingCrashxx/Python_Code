@@ -37,9 +37,6 @@ def main():
 	backup_file_name = "backup-" + str(date.today())
 	backup_file_dir = DEST_DIR + "\\" + backup_file_name
 
-	print(backup_file_name)
-	print(backup_file_dir)
-
 	if not path.exists(SRC_DIR):
 		print(f"directory: {SRC_DIR} does not exist")
 		exit(-1)
@@ -57,7 +54,9 @@ def main():
 	dirs = listdir(DEST_DIR)
 	if (backup_file_name + ".zip") in dirs:
 			remove((backup_file_dir + ".zip"))
+			
 	make_archive(base_name=backup_file_dir, format="zip", root_dir=SRC_DIR)
+	print(f"backup: {backup_file_name}.zip has been successfully created on {str(date.today)}")
 
 	
 if __name__ == '__main__':
