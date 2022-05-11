@@ -8,9 +8,9 @@ from os import path, listdir, remove, stat
 
 #variables that represent the src directory and destination directory.
 #change variables as needed.
-SRC_DIR = r"C:\Users\ajdec\Desktop\Test\project2"
-DEST_DIR = r"C:\Users\ajdec\Desktop\Test\proj2_backups"
-MAX_BACKUPS = 5
+SRC_DIR = r"C:\Users\ajdec\Desktop\1.18_minecraft_server\world"
+DEST_DIR = r"C:\Users\ajdec\Desktop\1.18_minecraft_server\backups"
+MAX_BACKUPS = 10
 
 #helper function that gets the st_ctime of all the zip files located in the DEST_DIR
 #searches for the dir with the biggest "existence" time and stores it in a new list

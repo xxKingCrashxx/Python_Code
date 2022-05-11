@@ -17,8 +17,8 @@ def ui():
 |_|\_\|_||_||_||___/        \___||_|  \__/_|/__/|_||_|
     """)
     print("===========================================================")
-    print(f"Version:{_APP_VERS} Automatic DDOS Script")
-    print(f"For personal Use Only:\tcopyright @{_AUTHOR}")
+    print(f"Version:{_APP_VERS} Automatic DDOS Script\n")
+    print(f"For personal Use Only:\tcopyright @{_AUTHOR}\n")
     print("===========================================================")
 
 def main():
