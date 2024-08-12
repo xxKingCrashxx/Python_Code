@@ -13,7 +13,7 @@ DEST_DIR = r"C:\Users\ajdec\Desktop\1.18_minecraft_server\backups"
 MAX_BACKUPS = 10
 
 #helper function that gets the st_ctime of all the zip files located in the DEST_DIR
-#searches for the dir with the biggest "existence" time and stores it in a new list
+#searches for the dir with the smallest "existence" time and stores it in a new list
 #function returns the dir with the oldest time using the max_existence
 def get_oldest_backup(dirs: list) -> str: 
 	dir_existence_time = [None] * len(dirs)
