@@ -10,6 +10,8 @@ Before Running this script, install Dependencies:
     - The absolute path to your minecraft server
 - DEST_DIR = r""
     - The absolute path for where you wish to save the backups
+- LOG_DIR = r""
+    - The absolute path for where you wish the logfile to be saved at.
 - MAX_BACKUPS = 10 
     - the number of backups to store. The script will remove the oldest backup if backups exceed or match the MAX_BACKUPS
 - SERVER_HOST = ""
