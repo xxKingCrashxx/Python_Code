@@ -4,8 +4,8 @@
 from shutil import make_archive 
 import sys
 import platform
-from datetime import date
-from os import path, listdir, remove, stat
+from datetime import date, datetime
+from os import path, listdir, remove, stat, makedirs
 from mcrcon import MCRcon
 import socket
 import time
@@ -14,6 +14,7 @@ import subprocess
 #change variables as needed.
 #Config
 SRC_DIR = r"" 		#		probably the absolute directory to the minecraft server.
+LOG_DIR = r""		#		directory you wish to save the logs file to.
 DEST_DIR = r"" 		# 		absolute directory to where you wish to store the backups.
 MAX_BACKUPS = 10 	#		max number of backups to keep until script starts replacing older backups.
 SERVER_HOST = ""	#		IP of the minecraft server.
@@ -33,7 +34,7 @@ def get_oldest_backup(dirs: list) -> str:
 	min_existence = sys.float_info.max
 
 	for i, dir in enumerate(dirs):
-		res = stat(DEST_DIR + "\\" + dir).st_ctime
+		res = stat(path.join(DEST_DIR, dir)).st_ctime
 		dir_existence_time[i] = res
 
 		if min_existence > res:
@@ -55,7 +56,7 @@ def is_server_up() -> bool:
 
 def stop_server():
 	try:
-		print("[INFO] Sending RCON Stop command...")
+		log_to_file("INFO", "Sending RCON Stop command...")
 		with MCRcon(SERVER_HOST, RCON_PASSWORD, port=RCON_PORT) as mcr:
 			mcr.command("say [BACK UP] Server backup script starting, please leave the server...")
 
@@ -68,21 +69,21 @@ def stop_server():
 			mcr.command("save-all")
 			mcr.command("stop")
 	except Exception as e:
-		print(f"[ERROR] Failed to send RCON command {e}")
+		log_to_file("ERROR", f"Failed to send RCON command {e}")
 		exit(1)
 
 	# wait for server to fully shut down.
 	start_time = time.time()
 	while is_server_up():
 		if time.time() - start_time > TIMEOUT:
-			print("[ERROR] Timeout Reached. Server is still up.")
+			log_to_file("ERROR", "Timeout Reached. Server is still up.")
 			exit(1)
 		time.sleep(2)
-	print("[INFO] Server is offline.")
+	log_to_file("INFO", "Server is offline.")
 
 
 def restart_server():
-	print("[INFO] Restarting Server...")
+	log_to_file("INFO", "Restarting Server...")
 	try:
 		match host_platform:
 			case "Windows":
@@ -91,18 +92,22 @@ def restart_server():
 					cwd=SRC_DIR
 				)
 			case "Linux":
-				subprocess.Popen(START_COMMAND, cwd=SRC_DIR, shell=True)
+				screen_cmd = f'screen -dmS minecraft-server bash -c "{START_COMMAND}"'
+				subprocess.run(screen_cmd, cwd=SRC_DIR, shell=True, check=True)
 			case _:
 				print("[ERROR] Unsupported os.")
 				exit(1)
 	except Exception as e:
-		print(f"[ERROR] Failed to start server: {e}")
+		log_to_file("ERROR", f"Failed to start server: {e}")
 		exit(1)
-	print("[INFO] Server has restarted successfully.")
+	log_to_file("INFO", "Server has restarted successfully.")
 
 def backup_folder():
-	backup_file_name = "backup-" + str(date.today())
-	backup_file_dir = DEST_DIR + "\\" + backup_file_name
+	timestamp = datetime.now().isoformat()
+	safe_timestamp = timestamp.replace(":", "-").replace(".", "-")
+	
+	backup_file_name = f"backup-{safe_timestamp}.zip"
+	backup_file_dir = path.join(DEST_DIR, backup_file_name)
 
 	if not path.exists(SRC_DIR):
 		print(f"directory: {SRC_DIR} does not exist")
@@ -115,13 +120,30 @@ def backup_folder():
 	dirs = listdir(DEST_DIR)
 	if MAX_BACKUPS <= len(dirs):
 		old_dir = get_oldest_backup(dirs)
-		remove(DEST_DIR + "\\" + dirs.pop(dirs.index(old_dir)))
+		remove(path.join(DEST_DIR, dirs.pop(dirs.index(old_dir))))
+		log_to_file("INFO", f"removed old log: {old_dir}")
 
 	if (backup_file_name + ".zip") in dirs:
 			remove((backup_file_dir + ".zip"))
 
 	make_archive(base_name=backup_file_dir, format="zip", root_dir=SRC_DIR)
-	print(f"[INFO] backup: {backup_file_name}.zip has been successfully created on {str(date.today())}")
+	log_to_file("INFO", f"{backup_file_name}.zip has been successfully created")
+
+def log_to_file(log_level, message):
+	timestamp = datetime.now().isoformat()
+	log_entry = f"[{log_level}] [{timestamp}] {message}"
+
+	print(log_entry)
+	try:
+		makedirs(LOG_DIR, exist_ok=True)
+		log_path = path.join(LOG_DIR, "minecraft-backup-log.txt")
+
+		with open(log_path, mode="a", encoding="utf-8") as fs:
+			fs.write(log_entry + "\n")
+
+	except (FileNotFoundError, PermissionError, OSError) as e:
+		print(f"[ERROR] Could not write to log file: {e}. Fallback to terminal.")
+
 
 def main():
 	stop_server()
