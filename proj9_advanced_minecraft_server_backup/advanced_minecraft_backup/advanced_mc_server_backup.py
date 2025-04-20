@@ -123,8 +123,8 @@ def backup_folder():
 		remove(path.join(DEST_DIR, dirs.pop(dirs.index(old_dir))))
 		log_to_file("INFO", f"removed old log: {old_dir}")
 
-	if (backup_file_name + ".zip") in dirs:
-			remove((backup_file_dir + ".zip"))
+	if (backup_file_name) in dirs:
+			remove((backup_file_dir))
 
 	make_archive(base_name=backup_file_dir, format="zip", root_dir=SRC_DIR)
 	log_to_file("INFO", f"{backup_file_name}.zip has been successfully created")
