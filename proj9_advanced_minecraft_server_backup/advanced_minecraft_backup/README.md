@@ -32,3 +32,6 @@ Before Running this script, install Dependencies:
 - You Must enable RCON.
 - You Must Set your RCON password.
 
+## Setup on linux systems:
+- You may have to setup a venv in python before you can install the dependencies.
+- I use screens for linux environments, so you should also install screens if you do not have it.

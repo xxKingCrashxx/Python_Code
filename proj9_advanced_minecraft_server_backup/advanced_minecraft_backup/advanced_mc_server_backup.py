@@ -13,8 +13,8 @@ import subprocess
 
 #change variables as needed.
 #Config
-SRC_DIR = r"" 		#		probably the absolute directory to the minecraft server.
-LOG_DIR = r""		#		directory you wish to save the logs file to.
+SRC_DIR = r"" 		#		the absolute directory to the minecraft server.
+LOG_DIR = r""		#		absolute directory you wish to save the logs file to.
 DEST_DIR = r"" 		# 		absolute directory to where you wish to store the backups.
 MAX_BACKUPS = 10 	#		max number of backups to keep until script starts replacing older backups.
 SERVER_HOST = ""	#		IP of the minecraft server.
@@ -144,6 +144,11 @@ def log_to_file(log_level, message):
 	except (FileNotFoundError, PermissionError, OSError) as e:
 		print(f"[ERROR] Could not write to log file: {e}. Fallback to terminal.")
 
+def send_email_notificaton():
+	pass
+
+def send_discord_notification():
+	pass
 
 def main():
 	stop_server()
