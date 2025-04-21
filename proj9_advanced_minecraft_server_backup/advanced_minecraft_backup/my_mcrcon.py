@@ -35,7 +35,10 @@ class RconPacket:
         type = int.from_bytes(rcon_packet_bytes_stream[8:12], byteorder="little")
         body = rcon_packet_bytes_stream[12: -2].decode("utf-8")
 
-        return RconPacket(id, type, body, size=size) 
+        return RconPacket(id, type, body, size=size)
+
+    def __repr__(self):
+        return f"<RconPacket id={self.__id} type={self.__type} size={self.__size} body={repr(self.__body)}>"
     
 class MCRcon:
     def __init__(self, server_ip, rcon_passwd, rcon_port=25575, ):
@@ -72,6 +75,10 @@ class MCRcon:
             self.__rcon_passwd
         )
         self.__send_packet(login_packet)
+
+        response = self.__recv_packet()
+        if response._RconPacket__id == -1:
+            raise PermissionError("Authentication failed: Invalid RCON password")
 
     def __recv_packet(self, ):
        def recv_exact(num_bytes):
