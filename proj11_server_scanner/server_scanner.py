@@ -34,6 +34,13 @@ def log_event(eventType, player, timestamp_string ):
     events = db.get_collection("player_events")
     if eventType == EVENT_TYPE["NEW_PLAYER"]:
         players = db.get_collection("Players")
+        player = players.find_one({
+            "_id": str(player[player].id)
+        })
+
+        if player is not None:
+            return
+        
         players.insert_one({
             "_id": str(player["player"].id),
             "player_name": player["player"].name,
@@ -43,8 +50,13 @@ def log_event(eventType, player, timestamp_string ):
 
     if eventType == EVENT_TYPE["PLAYER_LEAVE"]:
         players = db.get_collection("Players")
-        players.update_one({"_id": str(player["player"].id)},
-                         {"$inc": {"play_time": calculate_playtime(player["joined_at"], timestamp_string)}})
+        players.update_one(
+            {"_id": str(player["player"].id)},
+            {
+                "$inc": {"play_time": calculate_playtime(player["joined_at"], timestamp_string)}, 
+                "$set": {"last_seen":timestamp_string}
+            }
+        )
         player_sessions = db.get_collection("player_sessions")
         player_sessions.insert_one({
             "play_time": calculate_playtime(player["joined_at"], timestamp_string),
