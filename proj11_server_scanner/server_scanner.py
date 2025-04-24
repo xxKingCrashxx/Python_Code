@@ -101,7 +101,7 @@ def log_event(eventType, player, timestamp ):
         pass
 
     elif eventType == EVENT_TYPE["PLAYER_LEAVE"]:
-        update_player(player, timestamp)
+        update_player(player, player["joined_at"], timestamp)
         create_session(player, player["joined_at"], timestamp)
 
     # regardless of what event it is, log it into the database. 
