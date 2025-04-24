@@ -31,7 +31,7 @@ def calculate_playtime(isotime_start, isotime_end):
     return total_minutes 
 
 def player_exists(player_id):
-    players = db.get_collection("players")
+    players = db.get_collection("Players")
     player = players.find_one({
         "_id": str(player_id)
     })
