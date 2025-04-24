@@ -44,7 +44,7 @@ def log_event(eventType, player, timestamp_string ):
 
     events = db.get_collection("player_events")
     player_sessions = db.get_collection("player_sessions")
-    players = db.get_collection("players")
+    players = db.get_collection("Players")
 
     if eventType == EVENT_TYPE["NEW_PLAYER"]:
 
