@@ -22,6 +22,57 @@ SLEEP_TIME = 60
 client = MongoClient(MONGO_STRING)
 db = client["Peters-Minecraft-Server"]
 
+def create_session(player, join_timestamp, leave_timestamp):
+
+    player_sessions = db.get_collection("player_sessions_timeseries")
+    play_time_minutes = round(calculate_playtime(join_timestamp.isoformat(), leave_timestamp.isoformat()))
+    player_sessions.insert_one({
+            "session_info": {
+                "play_time": play_time_minutes,
+                "player": {
+                    "player_id": player["player"].id, 
+                    "player_name": player["player"].name
+                },
+                "left_timestamp": leave_timestamp
+            },
+            "join_timestamp": join_timestamp, 
+        })
+
+def create_event(player, event_type, event_timestamp):
+    events = db.get_collection("player_events_timeseries")
+    events.insert_one({
+            "timestamp": event_timestamp,
+            "event_info": {
+                "player_name": player["player"].name,
+                "player_id": str(player["player"].id),
+                "event_type": EVENT_TYPE_REV_MAP[event_type],
+            }
+    })
+
+def create_player(player, join_timestamp):
+    players = db.get_collection("Players")
+    if player_exists(player["player"].id):
+            return
+        
+    players.insert_one({
+        "_id": str(player["player"].id),
+        "player_name": player["player"].name,
+        "first_joined": join_timestamp,
+        "last_seen": join_timestamp,
+        "play_time": 0,
+    })
+
+def update_player(player, join_timestamp, leave_timestamp):
+     players = db.get_collection("Players")
+     play_time_minutes = round(calculate_playtime(join_timestamp.isoformat(), leave_timestamp.isoformat()))
+     players.update_one(
+            {"_id": str(player["player"].id)},
+            {
+                "$inc": {"play_time": play_time_minutes}, 
+                "$set": {"last_seen":leave_timestamp}
+            }
+        )
+
 def calculate_playtime(isotime_start, isotime_end):
     start = datetime.fromisoformat(isotime_start)
     end = datetime.fromisoformat(isotime_end)
@@ -42,102 +93,75 @@ def player_exists(player_id):
     
 def log_event(eventType, player, timestamp ):
 
-    events = db.get_collection("player_events_timeseries")
-    player_sessions = db.get_collection("player_sessions_timeseries")
-    players = db.get_collection("Players")
-
     if eventType == EVENT_TYPE["NEW_PLAYER"]:
-
         # player_map stored in memory may not have all the players, check db before writing the new_player event.
-        if player_exists(player["player"].id):
-            return
-        
-        players.insert_one({
-            "_id": str(player["player"].id),
-            "player_name": player["player"].name,
-            "first_joined": timestamp,
-            "play_time": 0,
-        })
+        create_player(player, timestamp)
 
     elif eventType == EVENT_TYPE["PLAYER_JOIN"]:
         pass
 
     elif eventType == EVENT_TYPE["PLAYER_LEAVE"]:
-        play_time_minutes = round(calculate_playtime(player["joined_at"].isoformat(), timestamp.isoformat()))
-        players.update_one(
-            {"_id": str(player["player"].id)},
-            {
-                "$inc": {"play_time": play_time_minutes}, 
-                "$set": {"last_seen":timestamp}
-            }
-        )
-        player_sessions.insert_one({
-            "session_info": {
-                "play_time": play_time_minutes,
-                "player": {
-                    "player_id": player["player"].id, 
-                    "player_name": player["player"].name
-                },
-                "left_timestamp": timestamp
-            },
-            "join_timestamp": player["joined_at"], 
-        })
+        update_player(player, timestamp)
+        create_session(player, player["joined_at"], timestamp)
 
     # regardless of what event it is, log it into the database. 
-    events.insert_one({
-            "timestamp": timestamp,
-            "event_info": {
-                "player_name": player["player"].name,
-                "player_id": str(player["player"].id),
-                "event_type": EVENT_TYPE_REV_MAP[eventType],
-            }
-    })
-
+    create_event(player, eventType, timestamp)
+    
     
 def main():
     player_map = {}
+    currently_online_map = {}
     last_players_online = set()
     
-    while True:
-        try:
-            server = JavaServer.lookup(address="184.16.77.172:25565", timeout=10)
-            status = server.status()
-            current_time = datetime.now()
+    try:
+        while True:
+            try:
+                server = JavaServer.lookup(address="184.16.77.172:25565", timeout=10)
+                status = server.status()
+                current_time = datetime.now()
 
-            current_sample = status.players.sample or []
-            current_players_online = set(p.name for p in current_sample)
+                current_sample = status.players.sample or []
+                current_players_online = set(p.name for p in current_sample)
 
-            joined_now = current_players_online - last_players_online
-            left_now = last_players_online - current_players_online
+                joined_now = current_players_online - last_players_online
+                left_now = last_players_online - current_players_online
 
-            if joined_now or left_now:
-                print(f"[{current_time.isoformat()}] Server IP: {server.address}\tPlayers Online: {status.players.online}")
-                print("Players:", [p.name for p in current_sample])
+                if joined_now or left_now:
+                    print(f"[{current_time.isoformat()}] Server IP: {server.address}\tPlayers Online: {status.players.online}")
+                    print("Players:", [p.name for p in current_sample])
 
-            for player in current_sample:
-                if player.name in joined_now:
-                    if player.name not in player_map:
-                        player_map[player.name] = {
-                            "player": player,
-                            "joined_at": current_time,
-                            "left_at": None
-                        }
-                        log_event(EVENT_TYPE["NEW_PLAYER"], player_map[player.name], current_time)
-                    print(f"[{current_time}] {player.name} joined.")
-                    player_map[player.name]["joined_at"] = current_time
-                    log_event(EVENT_TYPE["PLAYER_JOIN"], player_map[player.name], current_time)
+                for player in current_sample:
+                    if player.name in joined_now:
+                        if player.name not in player_map:
+                            player_map[player.name] = {
+                                "player": player,
+                                "joined_at": current_time,
+                                "left_at": None
+                            }
+                            log_event(EVENT_TYPE["NEW_PLAYER"], player_map[player.name], current_time)
+
+                        print(f"[{current_time}] {player.name} joined.")
+                        player_map[player.name]["joined_at"] = current_time
+                        currently_online_map[player.name] = player_map[player.name];
+                        log_event(EVENT_TYPE["PLAYER_JOIN"], player_map[player.name], current_time)
                     
 
-            for name in left_now:
-                player_map[name]["left_at"] = current_time
-                log_event(EVENT_TYPE["PLAYER_LEAVE"], player_map[name], current_time)
-                print(f"[{current_time.isoformat()}] {name} left the server.")
+                for name in left_now:
+                    player_map[name]["left_at"] = current_time
+                    log_event(EVENT_TYPE["PLAYER_LEAVE"], player_map[name], current_time)
+                    currently_online_map.pop(name, None)
+                    print(f"[{current_time.isoformat()}] {name} left the server.")
 
-            last_players_online = current_players_online
-        except Exception as e:
-            print(f"[{datetime.now().isoformat()}] Error: {e}")
+                last_players_online = current_players_online
+            except Exception as e:
+                print(f"[{datetime.now().isoformat()}] Error: {e}")
 
-        time.sleep(SLEEP_TIME)
+            time.sleep(SLEEP_TIME)
+    except KeyboardInterrupt:
+        for name, player in currently_online_map.items():
+            print(f"Logging leave event for {name} due to shutdown.")
+            log_event(EVENT_TYPE["PLAYER_LEAVE"], player, datetime.now())
+    
 
 if __name__ == "__main__":
     main()
