@@ -51,8 +51,6 @@ def create_event(player, event_type, event_timestamp):
 
 def create_player(player, join_timestamp):
     players = db.get_collection("Players")
-    if player_exists(player["player"].id):
-            return
         
     players.insert_one({
         "_id": str(player["player"].id),
@@ -95,6 +93,8 @@ def log_event(eventType, player, timestamp ):
 
     if eventType == EVENT_TYPE["NEW_PLAYER"]:
         # player_map stored in memory may not have all the players, check db before writing the new_player event.
+        if player_exists(player["player"].id):
+            return
         create_player(player, timestamp)
 
     elif eventType == EVENT_TYPE["PLAYER_JOIN"]:
