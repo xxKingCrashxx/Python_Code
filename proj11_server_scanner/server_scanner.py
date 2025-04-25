@@ -1,7 +1,7 @@
 from mcstatus import JavaServer
 import time
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from pymongo import MongoClient
 
 class Player:
@@ -41,28 +41,26 @@ client = MongoClient(MONGO_STRING)
 db = client["Peters-Minecraft-Server"]
 
 def create_session(player, join_timestamp, leave_timestamp):
-    player_sessions = db.get_collection("player_sessions_timeseries")
+    player_sessions = db.get_collection("player_sessions")
     play_time_minutes = round(calculate_playtime(join_timestamp.isoformat(), leave_timestamp.isoformat()))
     player_sessions.insert_one({
         "session_info": {
-            "play_time": play_time_minutes,
-            "player": {
-                "player_id": player.id,
-                "player_name": player.name
-            },
-            "left_timestamp": leave_timestamp
+            "player_id": player.id,
+            "player_name": player.name
         },
+        "left_timestamp": leave_timestamp,
         "join_timestamp": join_timestamp,
+        "play_time": play_time_minutes,
     })
 
 def create_event(player, event_type, event_timestamp):
-    events = db.get_collection("player_events_timeseries")
+    events = db.get_collection("player_events")
     events.insert_one({
         "timestamp": event_timestamp,
+        "event_type": EVENT_TYPE_REV_MAP[event_type],
         "event_info": {
             "player_name": player.name,
             "player_id": str(player.id),
-            "event_type": EVENT_TYPE_REV_MAP[event_type],
         }
     })
 
@@ -123,7 +121,7 @@ def main():
             try:
                 server = JavaServer.lookup(address="184.16.77.172:25565", timeout=10)
                 status = server.status()
-                current_time = datetime.now()
+                current_time = datetime.now(timezone.utc)
 
                 current_sample = status.players.sample or []
                 current_players = {Player(p.name, p.id) for p in current_sample}
@@ -157,7 +155,7 @@ def main():
                 last_players_online = current_players
 
             except Exception as e:
-                print(f"[{datetime.now().isoformat()}] Error: {e}")
+                print(f"[{datetime.now(timezone.utc).isoformat()}] Error: {e}")
 
             time.sleep(SLEEP_TIME)
 
