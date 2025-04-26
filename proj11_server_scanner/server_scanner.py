@@ -162,7 +162,7 @@ def main():
     except KeyboardInterrupt:
         for player in currently_online:
             print(f"Logging leave event for {player.name} due to shutdown.")
-            log_event(EVENT_TYPE["PLAYER_LEAVE"], player, datetime.now())
+            log_event(EVENT_TYPE["PLAYER_LEAVE"], player, datetime.now(tz=timezone.utc))
 
 if __name__ == "__main__":
     main()
