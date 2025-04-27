@@ -119,13 +119,16 @@ def main():
     try:
         while True:
             try:
+                #Get server object and status object to query the server.
                 server = JavaServer.lookup(address="184.16.77.172:25565", timeout=10)
                 status = server.status()
                 current_time = datetime.now(timezone.utc)
 
+                # get sampled list of players currently online then map them to a player object inside a set.
                 current_sample = status.players.sample or []
                 current_players = {Player(p.name, p.id) for p in current_sample}
 
+                # determine the recently joined players vs the players that left.
                 joined_now = current_players - last_players_online
                 left_now = last_players_online - current_players
 
@@ -133,6 +136,8 @@ def main():
                     print(f"[{current_time.isoformat()}] Server IP: {server.address}\tPlayers Online: {status.players.online}")
                     print("Players:", [p.name for p in current_players])
 
+                # create event for joined players
+                # save them locally in memory
                 for player in joined_now:
                     if player.name not in player_map:
                         player.join_time = current_time
@@ -145,6 +150,7 @@ def main():
                     log_event(EVENT_TYPE["PLAYER_JOIN"], player_map[player.name], current_time)
                     print(f"[{current_time}] {player.name} joined.")
 
+                #create leave event / session for each left players.
                 for player in left_now:
                     if player.name in player_map:
                         player_map[player.name].left_time = current_time
