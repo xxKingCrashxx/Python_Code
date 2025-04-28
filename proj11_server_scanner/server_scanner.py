@@ -142,13 +142,11 @@ def main():
                 # save them locally in memory
                 for player in joined_now:
 
-                    player.join_time = current_time
-                    log_event(EVENT_TYPE["PLAYER_JOIN"], player, current_time)
-                    print(f"[{current_time}] {player.name} joined.")
-
                     if player.name not in player_map:
                         player_map[player.name] = player
-        
+                        player.join_time = current_time
+                        log_event(EVENT_TYPE["PLAYER_JOIN"], player, current_time)
+                        print(f"[{current_time}] {player.name} joined.")    
 
                 #create leave event / session for each left players.
                 for player in left_now:
