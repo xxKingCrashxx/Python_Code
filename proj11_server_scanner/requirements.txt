@@ -1,3 +1,4 @@
 mcstatus
 pymongo
 tzdata
+python-dotenv
