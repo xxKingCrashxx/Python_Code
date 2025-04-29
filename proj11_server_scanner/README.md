@@ -82,6 +82,14 @@ Stores the start and end of player sessions, as well as their duration.
     ]
 }
 ```
+## Time Series
+The following collections are set up as a timeseries collection:
+- Player_Events
+- Player_Sessions
+- Server_Status
+
+The Meta information is the event_info, session_info for Player_Events and Player_Sessions
+The time property is timestamp and join_timestamp for Player_Events, Server_Status, and Player_Sessions
 
 ## Data Collection Flow
 

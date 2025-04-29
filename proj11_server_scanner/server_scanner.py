@@ -39,11 +39,12 @@ load_dotenv()
 
 MONGO_STRING = os.getenv("MONGO_STRING")
 MC_SERVER_IP = os.getenv("MC_SERVER_IP")
+DB_NAME = os.getenv("MONGO_DATABASE_NAME")
 
 SLEEP_TIME = 60
 
 client = MongoClient(MONGO_STRING)
-db = client["Peters-Minecraft-Server"]
+db = client[DB_NAME]
 
 #global collections.
 player_sessions = db.get_collection("player_sessions")
