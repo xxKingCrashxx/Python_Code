@@ -22,6 +22,8 @@ So in total we have 3 primary collections:
 - Player_Events
 - Player_Sessions
 
+additionally, you can also store the number of players and list of players.
+
 The Schema for each is the following:
 
 ```javascript
@@ -55,6 +57,16 @@ The Schema for each is the following:
         player_id: String
         player_name: String
     }
+}
+
+//server status
+{
+    timestamp: Date,
+    player_count: Int,
+    player_list: [{
+        player_id: String,
+        player_name: String,
+    }]
 }
 ```
 
