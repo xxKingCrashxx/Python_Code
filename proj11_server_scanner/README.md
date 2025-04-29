@@ -60,3 +60,12 @@ The Schema for each is the following:
 
 ### Implications
 From the corresponding collections, one can get a pretty accurate understanding of the activity of the server as well as the individual activity of specific players. Keep in mind, that this script can gather all the above information without the need for admin access. Unless active effort is done by the admins, like spoofing the list of currently online players, and limititing or turning off the sample player list, this information is free for the taking.
+
+### Possible Metrics that can be gathered:
+- total player session time
+- average session play time among players in a day, month, year
+- number of players online currently, or at a certain time in the day.
+- active hours of a specific player over a 24 hr period.
+- etc
+
+I do not have a strong analytics background, but I believe with the gathered information, one can transform it to get an understanding of the activity of the server. The more active the server and the longer metrics are gathered will result in more accurate information over time.
