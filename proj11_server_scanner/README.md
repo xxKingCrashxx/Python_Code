@@ -1,83 +1,138 @@
 # Minecraft Server Scanner
-This simple application utilizes the fact that one can query any minecraft server for basic metadata such as the player count and sample of the list of players online. Assuming the server does not have any plugins to scramble this metadata, one can gather metrics about who typically plays on the server, at what time, and for how long. This information can then later be transformed to find patterns about each individual player or the player population as a whole on the server.
+
+## Overview
+
+This application leverages publicly accessible metadata provided by vanilla Minecraft servers. By querying a server at regular intervals, it determines who is online, when players join or leave, and how long they stay. Unless server administrators actively obfuscate this metadata, it remains openly available for analysis.
 
 ## Libraries Used
-- mcstatus
-- pymongo
-- python-dotenv
-- tzdata
 
-mcstatus and pymongo are the primary libraries used for querying and storing the data.
+- `mcstatus`
+- `pymongo`
+- `python-dotenv`
+- `tzdata`
+
+`mcstatus` is used for querying server data, while `pymongo` manages data persistence in MongoDB.
 
 ## How It Works
-By default, a vanilla minecraft server allows basic pinging to see the players online / total supported players on the server. It also includes a sample, typically a max of 15, of players currently online. Every minute the script pings the server and keeps track of a dictionary of players and set of currently retrieved players. This way we can determine players who left and who joined by comparing the difference between the two.
 
-### Database Setup
-Since there are primarily two main things we can collect: players joining and leaving, we have two main events: PLAYER_JOIN and PLAYER_LEAVE that stores the players name and uuid aswell as the timestamp of when the event was initiated. There is also one more event that we can add called NEW_PLAYER. We can keep track of the number of unique players seen on the server in a different collection. This event would only trigger if the player hasn't been added to the collection of distinct players. 
+Vanilla Minecraft servers allow basic pinging to reveal the number of players online and a sample list (typically up to 15) of their usernames. This script pings the server every minute, compares the current player list with the previous one, and detects join or leave events accordingly. It logs these events and calculates session durations for each player.
 
-A join and leave event are typically associated with each other. The span of time between the join and leave can be called a session and this script also logs sessions after a player leaves.
+## Database Design
 
-So in total we have 3 primary collections:
-- Players
-- Player_Events
-- Player_Sessions
+Four main MongoDB collections store the gathered data:
 
-additionally, you can also store the number of players and list of players.
+### 1. `Players`
 
-The Schema for each is the following:
+Tracks unique players and their activity over time.
 
 ```javascript
-//Players Schema:
-
 {
-    _id: String (mcuuid)
-    player_name: String (username of player),
+    _id: String (mcuuid),
+    player_name: String,
     total_playtime: Int,
     first_joined: Date,
-    last_seen: Date,
+    last_seen: Date
 }
+```
 
-//Player_Events:
+### 2. `Player_Events`
+
+Captures events such as joining, leaving, and new player detection.
+
+```javascript
 {
     timestamp: Date,
-    event_type: String ["PLAYER_JOIN" | "PLAYER_LEAVE" |"NEW_PLAYER"],
+    event_type: String ["PLAYER_JOIN" | "PLAYER_LEAVE" | "NEW_PLAYER"],
     event_info: {
-        player_id: String (mcuuid),
-        player_name: String,
+        player_id: String,
+        player_name: String
     }
 }
+```
 
-//Player_Sessions
+### 3. `Player_Sessions`
 
+Stores the start and end of player sessions, as well as their duration.
+
+```javascript
 {
     join_timestamp: Date,
     leave_timestamp: Date,
     play_time: Int,
     session_info: {
-        player_id: String
+        player_id: String,
         player_name: String
     }
 }
+```
 
-//server status
+### 4. `Server_Status`
+
+(Optional) Stores a snapshot of the server state at each query.
+
+```javascript
 {
     timestamp: Date,
     player_count: Int,
-    player_list: [{
-        player_id: String,
-        player_name: String,
-    }]
+    player_list: [
+        {
+            player_id: String,
+            player_name: String
+        }
+    ]
 }
 ```
 
-### Implications
-From the corresponding collections, one can get a pretty accurate understanding of the activity of the server as well as the individual activity of specific players. Keep in mind, that this script can gather all the above information without the need for admin access. Unless active effort is done by the admins, like spoofing the list of currently online players, and limititing or turning off the sample player list, this information is free for the taking.
+## Data Collection Flow
 
-### Possible Metrics that can be gathered:
-- total player session time
-- average session play time among players in a day, month, year
-- number of players online currently, or at a certain time in the day.
-- active hours of a specific player over a 24 hr period.
-- etc
+1. Ping the server using `mcstatus` every minute.
+2. Retrieve the current list of sampled online players.
+3. Compare against the previous list to determine joins and leaves.
+4. Log `PLAYER_JOIN` and `PLAYER_LEAVE` events.
+5. Aggregate these into `Player_Sessions`.
+6. Update cumulative playtime in the `Players` collection.
 
-I do not have a strong analytics background, but I believe with the gathered information, one can transform it to get an understanding of the activity of the server. The more active the server and the longer metrics are gathered will result in more accurate information over time.
+## Example Queries
+
+**1. Total playtime for a specific player:**
+
+```javascript
+db.player_sessions.aggregate([
+  { $match: { "session_info.player_name": "King_Crash" } },
+  { $group: { _id: "$session_info.player_name", total_time: { $sum: "$play_time" } } }
+]);
+```
+
+**2. Active players in the last 24 hours:**
+
+```javascript
+db.player_events.find({
+  timestamp: { $gte: new Date(Date.now() - 1000 * 60 * 60 * 24) },
+  event_type: "PLAYER_JOIN"
+});
+```
+
+## Potential Metrics
+
+- Total playtime per player
+- Average session durations (daily, monthly, yearly)
+- Peak server hours and concurrent user counts
+- Player retention and return frequency
+- Hourly and weekly activity heatmaps
+
+These metrics can be visualized using tools like `matplotlib`, `seaborn`, `Plotly Dash`, or `Grafana`.
+
+## Security Considerations
+
+Unless actively restricted, Minecraft servers expose this metadata to anyone who queries them. Server administrators can reduce exposure by using plugins that:
+
+- Disable or obfuscate the player sample list
+- Randomize usernames returned in ping responses
+- Restrict detail in ping queries
+
+## Final Thoughts
+
+While simple in design, this script provides powerful insights into server and player behavior. The more active the server and the longer the script runs, the more valuable and accurate the data becomes. Even without advanced analytics experience, this tool enables meaningful analysis of server population trends and player habits.
+
+Server owners concerned about privacy should proactively configure protections to limit exposure to this form of passive data collection.
+
