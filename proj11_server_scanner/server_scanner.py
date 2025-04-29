@@ -45,8 +45,12 @@ SLEEP_TIME = 60
 client = MongoClient(MONGO_STRING)
 db = client["Peters-Minecraft-Server"]
 
+#global collections.
+player_sessions = db.get_collection("player_sessions")
+player_events = db.get_collection("player_events")
+players = db.get_collection("Players")
+
 def create_session(player, join_timestamp, leave_timestamp):
-    player_sessions = db.get_collection("player_sessions")
     play_time_minutes = round(calculate_playtime(join_timestamp, leave_timestamp))
     player_sessions.insert_one({
         "session_info": {
@@ -59,8 +63,7 @@ def create_session(player, join_timestamp, leave_timestamp):
     })
 
 def create_event(player, event_type, event_timestamp):
-    events = db.get_collection("player_events")
-    events.insert_one({
+    player_events.insert_one({
         "timestamp": event_timestamp,
         "event_type": EVENT_TYPE_REV_MAP[event_type],
         "event_info": {
@@ -70,7 +73,6 @@ def create_event(player, event_type, event_timestamp):
     })
 
 def create_player(player, join_timestamp):
-    players = db.get_collection("Players")
     players.insert_one({
         "_id": str(player.id),
         "player_name": player.name,
