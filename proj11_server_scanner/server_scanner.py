@@ -48,6 +48,7 @@ db = client["Peters-Minecraft-Server"]
 #global collections.
 player_sessions = db.get_collection("player_sessions")
 player_events = db.get_collection("player_events")
+server_status = db.get_collection("server_status")
 players = db.get_collection("Players")
 
 def create_session(player, join_timestamp, leave_timestamp):
@@ -70,6 +71,12 @@ def create_event(player, event_type, event_timestamp):
             "player_name": player.name,
             "player_id": str(player.id),
         }
+    })
+def create_server_status(player_count, player_list, timestamp):
+    server_status.insert_one({
+        "timestamp": timestamp,
+        "player_list": player_list,
+        "player_count": player_count
     })
 
 def create_player(player, join_timestamp):
@@ -127,7 +134,7 @@ def main():
 
                 # get sampled list of players currently online then map them to a player object inside a set.
                 current_sample = status.players.sample or []
-
+                online_players = status.players.online
                 current_players = {Player(p.name, p.id) for p in current_sample}
                 
                 # determine the recently joined players vs the players that left.
@@ -138,6 +145,9 @@ def main():
                     print(f"[{current_time.isoformat()}] Server IP: {server.address}\tPlayers Online: {status.players.online}")
                     print("Players:", [p.name for p in current_players])
 
+                    #log player list and count to server_session:
+                    create_server_status(online_players, [{"player_name": p.name, "player_id": p.id} for p in current_players], current_time)
+
                 # create event for joined players
                 # save them locally in memory
                 for player in joined_now:
@@ -145,8 +155,9 @@ def main():
                     if player.name not in player_map:
                         player_map[player.name] = player
                         player.join_time = current_time
+                        print(f"[{current_time}] {player.name} joined.")
                         log_event(EVENT_TYPE["PLAYER_JOIN"], player, current_time)
-                        print(f"[{current_time}] {player.name} joined.")    
+                            
 
                 #create leave event / session for each left players.
                 for player in left_now:
