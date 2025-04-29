@@ -82,7 +82,6 @@ def create_player(player, join_timestamp):
     })
 
 def update_player(player, join_timestamp, leave_timestamp):
-    players = db.get_collection("Players")
     play_time_minutes = round(calculate_playtime(join_timestamp, leave_timestamp))
     players.update_one(
         {"_id": str(player.id)},
@@ -98,7 +97,6 @@ def calculate_playtime(isotime_start:datetime, isotime_end:datetime):
     return total_minutes
 
 def player_exists(player_id):
-    players = db.get_collection("Players")
     return players.find_one({"_id": str(player_id)}) is not None
 
 def log_event(eventType, player_obj, timestamp):
@@ -152,12 +150,17 @@ def main():
 
                 #create leave event / session for each left players.
                 for player in left_now:
-                    leaving_player = player_map[player.name]
-                    leaving_player.left_time = current_time
 
-                    log_event(EVENT_TYPE["PLAYER_LEAVE"], leaving_player, current_time)
-                    print(f"[{current_time.isoformat()}] {leaving_player.name} left the server.")
-                    player_map.pop(player.name, None)
+                    leaving_player = player_map.get(player.name)
+                    if leaving_player == None:
+                        print(f"[{current_time.isoformat()}] [WARNING] player: {player.name} was not in the player_map")
+                    else:
+
+                        leaving_player.left_time = current_time
+
+                        log_event(EVENT_TYPE["PLAYER_LEAVE"], leaving_player, current_time)
+                        print(f"[{current_time.isoformat()}] {leaving_player.name} left the server.")
+                        player_map.pop(player.name, None)
 
                 last_players_online = current_players.copy()
 
