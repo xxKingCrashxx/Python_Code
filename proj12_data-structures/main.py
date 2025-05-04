@@ -9,7 +9,9 @@ def main():
     my_linked_list.append_to_back(5)
     my_linked_list.append_to_back(6)
     my_linked_list.insert_at(2, 69)
+    item = my_linked_list.pop()
 
     print(f"my_linked_list size: {my_linked_list.size}")
     print(f"items in my_linked_list: {my_linked_list}")
+    print(f"popped item: {item}")
 main()

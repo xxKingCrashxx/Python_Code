@@ -23,6 +23,9 @@ class LinkedList:
             self.next = next
             self.prev = prev
 
+        def __str__(self):
+            return f"[item: {self.item}]"
+
     def __init__(self):
         self.head = None
         self.tail = None
@@ -33,7 +36,7 @@ class LinkedList:
         cur = self.head
         count = 0
         while cur:
-            str_repr += f"[index: {count} item: {cur.item}] "
+            str_repr += f"[index: {count} node: {cur}] "
             cur = cur.next
             count += 1
         return str_repr
@@ -113,9 +116,35 @@ class LinkedList:
         self.size += 1
 
     def pop(self):
-        #TODO
-        pass
+        if not self.tail:
+            raise Exception("Empty List")
+        
+        popped_node = self.tail
+        if popped_node == self.head:
+            self.head = None
+            self.tail = None
+        else:
+            new_tail = popped_node.prev
+            new_tail.next = None
+            self.tail = new_tail
+            popped_node.prev = None
+
+        self.size -= 1
+        return popped_node.item
 
     def dequeue(self):
-        #todo
-        pass
+        if not self.head:
+            raise Exception("Empty List")
+        
+        del_node = self.head
+
+        if del_node == self.tail:
+            self.tail = None
+            self.head = None
+        else:
+            new_head = del_node.next
+            new_head.prev = None
+            self.head = new_head
+            del_node.next = None
+        self.size -= 1
+        return del_node.item
