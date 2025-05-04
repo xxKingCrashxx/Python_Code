@@ -9,12 +9,22 @@ class BinaryTree:
         self.root = None
 
     def insert(self, item):
-        #TODO
-        pass
+        def __insert_recurse(root: BinaryTree.Node, item):
+            if root is None:
+                return BinaryTree.Node(item)
+            
+            if root.item > item:
+                root.left = __insert_recurse(root.left, item)
+            elif root.item < item:
+                root.right = __insert_recurse(root.right, item)
+            return root
+        self.root = __insert_recurse(self.root, item)
 
     def remove(self, item):
         #TODO
         pass
+
+
 
 class LinkedList:
     class Node:
