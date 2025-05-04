@@ -20,8 +20,8 @@ class LinkedList:
     class Node:
         def __init__(self, item, next=None, prev=None):
             self.item = item
-            self.next = None
-            self.prev = None
+            self.next = next
+            self.prev = prev
 
     def __init__(self):
         self.head = None
@@ -29,17 +29,78 @@ class LinkedList:
         self.size = 0
 
     def insert_at(self, insert_index, item):
-        #TODO
-        pass
+        if insert_index < 0 or insert_index > self.size:
+            raise Exception(f"Cannot insert at an index of {insert_index}")
+
+        if item is None:
+            raise Exception("Cannot insert None Items")
+
+        # quick handling for head / tail nodes
+        if insert_index == 0:
+            self.append_to_front(item)
+            return
+        elif insert_index == self.size:
+            self.append_to_back(item)
+            return
+
+        # determining the closest end to start from based on whether the insert_index > or < midpoint
+        midpoint = self.size // 2
+
+        curr_node = self.head if insert_index <= midpoint else self.tail
+        count = 0 if curr_node == self.head else self.size - 1
+
+        #case where the inserted index is closer to the tail
+        if curr_node == self.head:
+            while curr_node is not None and count > insert_index:
+                curr_node = curr_node.prev
+                count -= 1
+        #case where the inserted index is closer to the head
+        else:
+            while curr_node is not None and count < insert_index:
+                curr_node = curr_node.next
+                count += 1
+
+        node_after = curr_node
+        node_before = curr_node.prev
+        new_node = self.Node(item, next=node_after, prev=node_before)
+
+        if node_before is not None:
+            node_before.next = new_node
+
+        if node_after is not None:
+            node_after.prev = new_node
+
+        self.size += 1
 
 
     def append_to_front(self, item):
-        #TODO
-        pass
+        if item is None:
+            raise Exception("Cannot insert None Items")
+
+        if self.head is None:
+            self.head = self.Node(item)
+            self.tail = self.head
+        else:
+            old_head = self.head
+            new_head = self.Node(item, next=old_head)
+            old_head.prev = new_head
+            self.head = new_head
+        self.size += 1
+
 
     def append_to_back(self, item):
-        #TODO
-        pass
+        if item is None:
+            raise Exception("Cannot insert None Items")
+
+        if self.head is None:
+            self.head = self.Node(item)
+            self.tail = self.head
+        else:
+            old_tail = self.tail
+            new_tail = self.Node(item, prev=old_tail)
+            old_tail.next = new_tail
+            self.tail = new_tail
+        self.size += 1
 
     def pop(self):
         #TODO
