@@ -28,6 +28,16 @@ class LinkedList:
         self.tail = None
         self.size = 0
 
+    def __str__(self):
+        str_repr = ""
+        cur = self.head
+        count = 0
+        while cur:
+            str_repr += f"[index: {count} item: {cur.item}] "
+            cur = cur.next
+            count += 1
+        return str_repr
+
     def insert_at(self, insert_index, item):
         if insert_index < 0 or insert_index > self.size:
             raise Exception(f"Cannot insert at an index of {insert_index}")
@@ -50,7 +60,7 @@ class LinkedList:
         count = 0 if curr_node == self.head else self.size - 1
 
         #case where the inserted index is closer to the tail
-        if curr_node == self.head:
+        if curr_node == self.tail:
             while curr_node is not None and count > insert_index:
                 curr_node = curr_node.prev
                 count -= 1
