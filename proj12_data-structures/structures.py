@@ -24,7 +24,11 @@ class BinaryTree:
         #TODO
         pass
 
+class Queue:
+    pass
 
+class Stack:
+    pass
 
 class LinkedList:
     class Node:
