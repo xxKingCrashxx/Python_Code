@@ -1,4 +1,4 @@
-from structures import LinkedList
+from structures import LinkedList, BinaryTree
 
 def main():
     my_linked_list = LinkedList()
@@ -14,4 +14,12 @@ def main():
     print(f"my_linked_list size: {my_linked_list.size}")
     print(f"items in my_linked_list: {my_linked_list}")
     print(f"popped item: {item}")
+
+    print("==============tree=========")
+    tree = BinaryTree()
+    tree.insert(2)
+    tree.insert(1)
+    tree.insert(4)
+    tree.insert(3)
+    tree.insert(5)
 main()

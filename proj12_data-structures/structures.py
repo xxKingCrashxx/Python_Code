@@ -20,10 +20,57 @@ class BinaryTree:
             return root
         self.root = __insert_recurse(self.root, item)
 
-    def remove(self, item):
-        #TODO
-        pass
+    @staticmethod
+    def __get_smallest_node(root: 'BinaryTree.Node'):
+        cur = root
+        while cur.left is not None:
+            cur = cur.left
+        return cur
 
+    def remove(self, item):
+        def __remove_recurse(root: BinaryTree.Node, item):
+            if not root:
+                return None, None
+            
+            if root.item > item:
+                root.left, del_item = __remove_recurse(root.left, item)
+            elif root.item < item:
+                root.right, del_item = __remove_recurse(root.right, item)
+            else:
+                del_item = root.item
+
+                if not root.right and not root.left:
+                    return None, None
+                elif not root.left:
+                    return root.right, del_item
+                elif not root.right:
+                    return root.left, del_item
+                
+                min_node = BinaryTree.__get_smallest_node(root.right)
+                root.item = min_node.item
+                root.right, _ = __remove_recurse(root.right, min_node.item)
+
+            return root, del_item
+        self.root, del_item = __remove_recurse(self.root, item)
+        return del_item
+    
+    def print_tree(self):
+        def __print_tree_recurse(root: BinaryTree.Node, printStr: str):
+            if root is None:
+                return printStr
+            
+            printStr += f" {root.item}"
+
+            if root.left is not None:
+                printStr = __print_tree_recurse(root.left, printStr)
+            
+            if root.right is not None:
+                printStr = __print_tree_recurse(root.right, printStr)
+            
+            return printStr
+        
+        return __print_tree_recurse(self.root, "")
+          
 class Queue:
     pass
 
