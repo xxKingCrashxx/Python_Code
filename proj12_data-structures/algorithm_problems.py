@@ -61,3 +61,12 @@ def get_maximum_profit(stock_prices: list[int]):
        max_profit = max(max_profit, price - min_price)
 
     return max_profit
+
+def remove_duplicate_from_sorted_array(sorted_arr: list[int]):
+    new_arr = [sorted_arr[0]]
+    for i in range(1, len(sorted_arr)):
+        if sorted_arr[i] == sorted_arr[i - 1]:
+            continue
+        else:
+            new_arr.append(sorted_arr[i])
+    return new_arr

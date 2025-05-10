@@ -1,5 +1,5 @@
 from structures import LinkedList, BinaryTree
-from algorithm_problems import find_missing_repeating, get_maximum_profit
+from algorithm_problems import find_missing_repeating, get_maximum_profit, remove_duplicate_from_sorted_array
 
 def main():
     my_linked_list = LinkedList()
@@ -31,6 +31,9 @@ def main():
     print(results)
 
     results = get_maximum_profit([7, 10, 1, 3, 6, 9, 2])
+    print(results)
+
+    results = remove_duplicate_from_sorted_array([1, 1, 2, 2, 3, 4, 4, 4, 5, 5])
     print(results)
 
 main()
