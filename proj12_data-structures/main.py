@@ -1,5 +1,5 @@
 from structures import LinkedList, BinaryTree
-from algorithm_problems import find_missing_repeating
+from algorithm_problems import find_missing_repeating, get_maximum_profit
 
 def main():
     my_linked_list = LinkedList()
@@ -28,6 +28,9 @@ def main():
     print(results)
 
     results = find_missing_repeating([4, 3, 6, 2, 1, 1])
+    print(results)
+
+    results = get_maximum_profit([7, 10, 1, 3, 6, 9, 2])
     print(results)
 
 main()

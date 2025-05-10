@@ -38,4 +38,26 @@ def find_missing_repeating(arr):
 
     return [duplicate_num, missing_num]
 
+'''
+Given an array prices[] of length N, representing the prices of the stocks on different days, 
+the task is to find the maximum profit possible by buying and selling the stocks on different 
+days when at most one transaction is allowed. Here one transaction means 1 buy + 1 Sell.
+Note: Stock must be bought before being sold.
+'''
 
+def get_maximum_profit(stock_prices: list[int]):
+
+    def max(num1, num2):
+        return num1 if num1 >= num2 else num2
+    
+    def min(num1, num2):
+        return num1 if num1 <= num2 else num2
+    
+    min_price = stock_prices[0]
+    max_profit = 0
+
+    for index, price in enumerate(stock_prices):
+       min_price = min(min_price, price)
+       max_profit = max(max_profit, price - min_price)
+
+    return max_profit
