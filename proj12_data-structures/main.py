@@ -1,4 +1,5 @@
 from structures import LinkedList, BinaryTree
+from algorithm_problems import find_missing_repeating
 
 def main():
     my_linked_list = LinkedList()
@@ -22,4 +23,11 @@ def main():
     tree.insert(4)
     tree.insert(3)
     tree.insert(5)
+
+    results = find_missing_repeating([3, 1, 3])
+    print(results)
+
+    results = find_missing_repeating([4, 3, 6, 2, 1, 1])
+    print(results)
+
 main()
