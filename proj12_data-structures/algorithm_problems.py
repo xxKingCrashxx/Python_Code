@@ -70,3 +70,24 @@ def remove_duplicate_from_sorted_array(sorted_arr: list[int]):
         else:
             new_arr.append(sorted_arr[i])
     return new_arr
+
+def zig_zag_arr(arr: list[int]):
+    def swap(index1, index2):
+        temp = arr[index1]
+        arr[index1] = arr[index2]
+        arr[index2] = temp
+
+    trip = True
+    size = len(arr)
+
+    if size <= 1:
+        return arr
+    
+    for i in range(size - 1):
+        if trip:
+            if arr[i] > arr[i + 1]:
+                swap(i, i + 1)
+        else:
+            if arr[i] < arr[i + 1]:
+                swap(i, i + 1)
+        trip =  not trip

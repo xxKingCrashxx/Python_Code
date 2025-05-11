@@ -1,5 +1,5 @@
 from structures import LinkedList, BinaryTree
-from algorithm_problems import find_missing_repeating, get_maximum_profit, remove_duplicate_from_sorted_array
+from algorithm_problems import find_missing_repeating, get_maximum_profit, remove_duplicate_from_sorted_array, zig_zag_arr
 
 def main():
     my_linked_list = LinkedList()
@@ -35,5 +35,9 @@ def main():
 
     results = remove_duplicate_from_sorted_array([1, 1, 2, 2, 3, 4, 4, 4, 5, 5])
     print(results)
+
+    arr = [7, 10, 1, 3, 6, 9, 2]
+    zig_zag_arr(arr)
+    print(arr)
 
 main()
